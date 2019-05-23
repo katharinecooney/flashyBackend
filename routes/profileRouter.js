@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express.Router;
+const router = express.Router();
 const mongoose = require('mongoose');
 
 /*************** UPDATE PROFILE ***************/
@@ -27,3 +27,5 @@ router.get('/:deckId', (req, res, next) => {
 router.delete('/:cardId/delete', (req, res, next) => {
   
 });
+
+module.exports = router;

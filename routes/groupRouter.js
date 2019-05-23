@@ -1,6 +1,6 @@
 const express = require('express');
-const router = express.Router;
 const mongoose = require('mongoose');
+const router = express.Router();
 
 const {
   isLoggedIn,
@@ -8,19 +8,35 @@ const {
   validationLoggin,
 } = require('../helpers/middlewares');
 
+//*************** JOIN GROUP ***************//
 
-/*************** JOIN GROUP ***************/
+router.post('/:groupid/join', (req, res, next) => {
 
-router.post('/:groupid/join', isLoggedIn(), (req, res, next) => {
- // find group by id
- // add current member to members array
+  const {groupid} = req.params;
+
+  if ( !mongoose.Types.ObjectId.isValid(groupid) ) {
+  res.status(400).json({ message: 'Group id is not valid' });
+  return;
+}
+
+  Group.findByIdAndUpdate(groupid, {$push: { members: req.session.currentUser }})
+  .then(() => {
+    res
+    .json({message: "Success!"})
+    .status(201)
+  })
+  .catch(error => {
+    next(error);
+  })
 });
 
-/*************** CREATE NEW GROUP ***************/
+//*************** CREATE NEW GROUP ***************//
 
-router.post('/create', isLoggedIn(), (req, res, next) => {
- // create new Group with school, class, passcode from req.body
+router.post('/create', (req, res, next) => {
+ // create new Group with school, class, ?passcode from req.body
  // ? do i need to add empty arrays for members and groupDeck? (not required)
+const { school, subject, passcode } = req.body;
+Group.create({school, subject, passcode })
 
 });
 
@@ -39,6 +55,18 @@ router.put('/:groupid/card/save', (req, res, next) => {
 
 /*************** VISIT SPECIFIC GROUP PAGE ***************/
 
-router.get('/:groupid', isLoggedIn(), (req, res, next) => {
-// find group by id
+router.get('/:groupid', (req, res, next) => {
+  // find group by id
+  const { groupid } = req.params;
+  Group.findById(groupid)
+    .then(foundGroup => {
+      res.json(foundGroup)
+    })
+    .catch( error => {
+      res
+        .status(500)
+        .json(error)
+    })
 });  
+
+module.exports = router;
