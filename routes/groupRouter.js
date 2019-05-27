@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const router = express.Router();
 const Group = require('../models/group');
 const User = require('../models/user');
@@ -13,18 +12,12 @@ const Flashcard = require('../models/flashcard');
 
 //* ************** JOIN GROUP ***************//
 
-router.post('/:groupId/join', (req, res, next) => {
-  const { groupId } = req.params;
+router.post('/join', (req, res, next) => {
   const userId = req.session.currentUser._id;
-
-  if (!mongoose.Types.ObjectId.isValid(groupId)) {
-    res.status(400).json({ message: 'Group id is not valid' });
-    return;
-  }
-
-  Group.findByIdAndUpdate(groupId, { $push: { members: req.session.currentUser } })
-    .then(() => {
-      User.findByIdAndUpdate(userId, { $push: { groups: groupId } }, { new: true })
+  const { passcode } = req.body;
+  Group.findByIdAndUpdate(passcode, { $push: { members: req.session.currentUser } })
+    .then((group) => {
+      User.findByIdAndUpdate(userId, { $push: { groups: { group: group._id } } }, { new: true })
         .then((user) => {
           // req.session.currentUser = user;
           res
@@ -41,16 +34,16 @@ router.post('/:groupId/join', (req, res, next) => {
 //* ************** CREATE NEW GROUP ***************//
 
 router.post('/create', (req, res, next) => {
-  const { school, subject, passcode } = req.body;
+  const { school, subject } = req.body;
   // ADD VALIDATION
-  if (!school || !subject || !passcode) {
+  if (!school || !subject) {
     res
       .json({ message: 'Please fill in all fields!!!' })
       .status(422);
     return;
   }
   const creator = req.session.currentUser;
-  Group.create({ creator, school, subject, passcode })
+  Group.create({ creator, school, subject })
     .then((newGroup) => {
       res
         .json(newGroup)
@@ -87,11 +80,13 @@ router.post('/:groupId/card/create', (req, res, next) => {
 
 /** ************* SAVE CARD TO PERSONAL DECK ***************/
 
-router.put('/:groupdId/card/:cardId/save', (req, res, next) => {
+router.put('/:groupId/card/:cardId/save', (req, res, next) => {
   const { cardId, groupId } = req.params;
   const userId = req.session.currentUser._id;
-  User.findOneAndUpdate({ _id: userId, groups: groupId }, { $push: { 'groups.userDeck': cardId } })
+  console.log(groupId, userId);
+  User.findOneAndUpdate({ _id: userId, 'groups.group': groupId }, { $push: { 'groups.$.userDeck': cardId } }, { new: true })
     .then((user) => {
+      console.log(user);
       res
         .json(user)
         .status(200);
@@ -104,7 +99,7 @@ router.put('/:groupdId/card/:cardId/save', (req, res, next) => {
 router.get('/:groupid', (req, res, next) => {
   // find group by id
   const { groupid } = req.params;
-  Group.findById(groupid)
+  Group.findById(groupid).populate('groupDeck')
     .then(foundGroup => {
       res.json(foundGroup);
     })

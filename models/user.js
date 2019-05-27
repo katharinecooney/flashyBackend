@@ -8,8 +8,9 @@ const userSchema = new Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   groups: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Group',
+    group: {
+      type: Schema.Types.ObjectId,
+      ref: 'Group' },
     userDeck: [{ type: Schema.Types.ObjectId, ref: 'Flashcard' }]
   }]
 
