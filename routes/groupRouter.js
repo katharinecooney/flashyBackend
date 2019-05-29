@@ -81,7 +81,7 @@ router.put('/:groupId/card/:cardId/save', (req, res, next) => {
     return currentCard === cardId;
   };
   const { groups } = req.session.currentUser;
-
+  console.log(groups);
   groups.forEach((deck) => {
     if (deck.group === groupId) {
       if (deck.userDeck.some(isSavedAlready)) {
