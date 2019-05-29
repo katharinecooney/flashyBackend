@@ -125,12 +125,14 @@ router.get('/:groupid', (req, res, next) => {
 /** ************* UPDATE FLASHCARD ***************/
 
 router.put('/:groupId/card/:cardId/update', (req, res, next) => {
-  const { cardId, groupId } = req.params;
+  const { cardId } = req.params;
   const { frontText, backText } = req.body;
   // const userId = req.session.currentUser._id;
-  Flashcard.findByIdAndUpdate(cardId, { frontText, backText }, { new: true })
+  console.log(cardId);
+  Flashcard.findByIdAndUpdate(cardId, { $set: { frontText, backText } }, { new: true })
     .then(updatedCard => {
-      res.json(updatedCard).status(201);
+      console.log(updatedCard);
+      res.json(updatedCard).status(200);
     })
     .catch(error => { next(error); });
 });
