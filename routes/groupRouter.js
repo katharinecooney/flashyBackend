@@ -1,8 +1,10 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const Group = require('../models/group');
 const User = require('../models/user');
 const Flashcard = require('../models/flashcard');
+const ObjectId = mongoose.Types.ObjectId;
 
 //* ************** JOIN GROUP ***************//
 
@@ -13,7 +15,7 @@ router.post('/join', (req, res, next) => {
     .then((group) => {
       User.findByIdAndUpdate(userId, { $push: { groups: { group: group._id } } }, { new: true })
         .then((user) => {
-          // req.session.currentUser = user;
+          req.session.currentUser = user;
           res
             .json({ message: 'Success!', user })
             .status(201);
@@ -83,8 +85,10 @@ router.put('/:groupId/card/:cardId/save', (req, res, next) => {
   const { groups } = req.session.currentUser;
   console.log(groups);
   groups.forEach((deck) => {
+    console.log(deck.group, groupId);
     if (deck.group === groupId) {
-      if (deck.userDeck.some(isSavedAlready)) {
+      console.log(deck.userDeck.includes(isSavedAlready));
+      if (deck.userDeck.includes(isSavedAlready)) {
         return res.json({ message: 'you have this one' }).status(403);
       } else {
         User.findOneAndUpdate({ _id: userId, 'groups.group': groupId },
