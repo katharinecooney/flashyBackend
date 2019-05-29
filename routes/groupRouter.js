@@ -79,27 +79,37 @@ router.post('/:groupId/card/create', (req, res, next) => {
 });
 
 /** ************* SAVE CARD TO PERSONAL DECK ***************/
-
 router.put('/:groupId/card/:cardId/save', (req, res, next) => {
   const { cardId, groupId } = req.params;
   const userId = req.session.currentUser._id;
-  console.log(groupId, userId);
 
-  User.findOneAndUpdate({ _id: userId, 'groups.group': groupId },
+  let isSavedAlready = (currentCard) => {
+    return currentCard === cardId;
+  };
+  const { groups } = req.session.currentUser;
 
-    // check if card is present
+  groups.forEach((deck) => {
+    if (deck.group === groupId) {
+      if (deck.userDeck.some(isSavedAlready)) {
+        return res.json({ message: 'you have this one' }).status(403);
+      } else {
+        User.findOneAndUpdate({ _id: userId, 'groups.group': groupId },
 
-    { $push: { 'groups.$.userDeck': cardId } },
+          // check if card is present
 
-    { new: true })
-    .then((user) => {
-      console.log(user);
-      req.session.currentUser = user;
-      res
-        .json(user)
-        .status(200);
-    })
-    .catch(error => { next(error); });
+          { $push: { 'groups.$.userDeck': cardId } },
+
+          { new: true })
+          .then((user) => {
+            req.session.currentUser = user;
+            res
+              .json(user)
+              .status(200);
+          })
+          .catch(error => { next(error); });
+      }
+    }
+  });
 });
 
 /** ************* VISIT SPECIFIC GROUP PAGE ***************/
