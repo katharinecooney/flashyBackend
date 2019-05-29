@@ -44,7 +44,7 @@ router.get('/groups', (req, res, next) => {
 router.get('/:deckId', (req, res, next) => {
   const { deckId } = req.params;
   const userId = req.session.currentUser._id;
-  User.findById(userId, { 'group.userDeck.-id': deckId }).populate('groups.userDeck')
+  User.findById(userId, { 'group.userDeck._id': deckId }).populate('groups.userDeck')
     .then(data => {
       res.json(data);
     })
@@ -58,12 +58,14 @@ router.delete('/:groupId/:cardId/delete', (req, res, next) => {
   const userId = req.session.currentUser._id;
   const { cardId, groupId } = req.params;
   console.log(cardId);
+  console.log(groupId);
   User.findOneAndUpdate({ _id: userId, 'groups.group': groupId }, { $pull: { 'groups.$.userDeck': ObjectId(cardId) } }, { new: true })
-    .then((user) => {
-      req.session.currentUser = user;
+    .then((newUser) => {
+      console.log(newUser);
+      req.session.currentUser = newUser;
       res
         .status(202)
-        .json({ message: `Card with id ${cardId} removed successfully.`, user });
+        .json({ message: `Card with id ${cardId} removed successfully.`, newUser });
     })
     .catch(err => {
       res.json(err);

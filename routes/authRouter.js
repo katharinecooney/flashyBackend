@@ -13,7 +13,13 @@ const {
 } = require('../helpers/middlewares');
 
 router.get('/me', isLoggedIn(), (req, res, next) => {
-  res.json(req.session.currentUser);
+  User.findById(req.session.currentUser._id).populate('groups.group').populate('groups.userDeck')
+    .then((user) => {
+      res.json(user);
+    })
+    .catch((error) => {
+      next(error);
+    });
 });
 
 router.post(

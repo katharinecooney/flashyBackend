@@ -84,9 +84,17 @@ router.put('/:groupId/card/:cardId/save', (req, res, next) => {
   const { cardId, groupId } = req.params;
   const userId = req.session.currentUser._id;
   console.log(groupId, userId);
-  User.findOneAndUpdate({ _id: userId, 'groups.group': groupId }, { $push: { 'groups.$.userDeck': cardId } }, { new: true })
+
+  User.findOneAndUpdate({ _id: userId, 'groups.group': groupId },
+
+    // check if card is present
+
+    { $push: { 'groups.$.userDeck': cardId } },
+
+    { new: true })
     .then((user) => {
       console.log(user);
+      req.session.currentUser = user;
       res
         .json(user)
         .status(200);
