@@ -4,12 +4,6 @@ const Group = require('../models/group');
 const User = require('../models/user');
 const Flashcard = require('../models/flashcard');
 
-// const {
-//   isLoggedIn,
-//   isNotLoggedIn,
-//   validationLoggin
-// } = require('../helpers/middlewares');
-
 //* ************** JOIN GROUP ***************//
 
 router.post('/join', (req, res, next) => {
@@ -126,6 +120,19 @@ router.get('/:groupid', (req, res, next) => {
         .status(500)
         .json(error);
     });
+});
+
+/** ************* UPDATE FLASHCARD ***************/
+
+router.put('/:groupId/card/:cardId/update', (req, res, next) => {
+  const { cardId, groupId } = req.params;
+  const { frontText, backText } = req.body;
+  // const userId = req.session.currentUser._id;
+  Flashcard.findByIdAndUpdate(cardId, { frontText, backText }, { new: true })
+    .then(updatedCard => {
+      res.json(updatedCard).status(201);
+    })
+    .catch(error => { next(error); });
 });
 
 module.exports = router;
