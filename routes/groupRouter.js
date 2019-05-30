@@ -82,10 +82,12 @@ router.put('/:groupId/card/:cardId/save', (req, res, next) => {
   let isSavedAlready = (currentCard) => {
     return currentCard === cardId;
   };
+
   const { groups } = req.session.currentUser;
   console.log(groups);
   groups.forEach((deck) => {
-    console.log(deck.group, groupId);
+    console.log('DECK AND GROUP IDS', deck.group, groupId);
+    console.log('DECK AND GROUP IDS ARE EQUAL', deck.group === groupId);
     if (deck.group === groupId) {
       console.log(deck.userDeck.includes(isSavedAlready));
       if (deck.userDeck.includes(isSavedAlready)) {
